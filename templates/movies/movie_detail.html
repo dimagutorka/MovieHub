@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <h1>Movie page</h1>
+
+    <div>
+        <ul>
+            <li>{{ movie.title }}           </li>
+            <li>{{ movie.release_date }}    </li>
+            <li>{{ movie.country | upper }} </li>
+
+            {% if avg_movie_rate %}
+                <p> Movie&apos;s rate {{ avg_movie_rate }} </p>
+            {% else %}
+                <li>Movie&apos;s rate: not enough rates to show the movie rating</li>
+            {% endif %}
+
+            {% for genre in genres_in_movie %}
+                <li>{{ genre.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <img src="{{ movie.poster }}" alt="{{ movie.title }} Poster">
+       
+    </div>
+
+     <form action="{% url 'movie' movie.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" name="watch_later_submit"> Add to watch later</button>
+     </form>
+    
+
+    <div>
+        <form action="{% url 'movie' movie.id %}" enctype="multipart/form-data" method="POST">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" name="comment_submit">Post the comment</button>
+        </form>
+
+        {% for com in comments %}
+            <p>{{ com.user.username }}: {{ com.content }} </p></p>
+        {% endfor %}
+    </div>
+
+    
+    {% if user.is_authenticated %}
+    <form action="{% url 'movie' movie.id %}" method="POST">
+        {% csrf_token %}
+        {{ rate_form }}
+        <button type="submit" name="rate_submit"> Submit Rating</button>
+    </form>
+    {% endif %}
+
+
+    <h2>Recently viewed</h2>
+
+    <div class="container">
+        {% for movie in recently_viewed %}
+            <p>{{ movie.title }}</p>
+        {% endfor %}
+    </div>
+
+
+{% endblock %}
