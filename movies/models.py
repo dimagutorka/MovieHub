@@ -66,6 +66,17 @@ class WatchLater(models.Model):
 		unique_together = ('user', 'movie')
 
 
+
+	"""
+
+	def clear
+	if object.exists
+		send email
+	elif do something else
+	
+	"""
+
+
 # TODO-12: new model
 """
 class MoviesPlaylist

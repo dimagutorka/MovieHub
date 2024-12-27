@@ -1,35 +1,57 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from .forms import AddFriend
 from .models import FriendsList
 from django.contrib.auth.models import User
 
 
+def handle_add_friend(request, user_id):
+	user_to_add_in_friend_list = User.objects.get(id=user_id)
+	user_fried_form = AddFriend(request.POST)
+	if user_fried_form.is_valid():
+		form = user_fried_form.save(commit=False)
+		form.user = request.user
+		form.friend = user_to_add_in_friend_list
+		form.save()
+
+
+def handle_delete_friend(request, user_id):
+	FriendsList.objects.get(friend_id=user_id, user_id=request.user.id).delete()
+
+
+def handle_accept_friend(request, friend_id):
+	accept_friend = get_object_or_404(FriendsList, user_id=friend_id, friend_id=request.user)
+
+	if not accept_friend.is_friend:
+		accept_friend.is_friend = True
+		accept_friend.save()
+		messages.success(request, 'Friend accepted')
+
+
+def handle_decline_friend(request, friend_id):
+	decline_friend = get_object_or_404(FriendsList, user_id=friend_id, friend_id=request.user)
+
+	if decline_friend.is_friend:
+		decline_friend.delete()
+		messages.info(request, "Friend request declined.")
+
+
 @login_required(login_url='/login/')
 def friends_list_view(request):
-	request_user_id = request.user
-	friend_ids = FriendsList.objects.values_list('user_id', flat=True).filter(friend_id=request_user_id,
-	                                                                          is_friend=False)
+	# get all the user's id who want to befriend the current authorized user and who aren't friend with the user yet
+	friend_ids = FriendsList.objects.values_list('user_id', flat=True).filter(friend_id=request.user, is_friend=False)
+	# get all the user's objects based on a filter -> friend_ids
 	friend_requests = User.objects.filter(id__in=friend_ids)
 
 	if request.method == 'POST':
 		friend_id = request.POST.get('user_id', None)
+
 		if "accept_friend" in request.POST:
-			friend_entry = get_object_or_404(FriendsList, user_id=friend_id, friend_id=request_user_id)
-			if not friend_entry.is_friend:
-				friend_entry.is_friend = True
-				friend_entry.save()
-				messages.success(request, 'Friend accepted')
-			else:
-				messages.warning(request, 'You already accepted')
+			handle_accept_friend(request, friend_id)
 
 		elif "decline_friend" in request.POST:
-			declined_friend = FriendsList.objects.filter(user_id=friend_id, friend_id=request_user_id)
-			if declined_friend.exists():
-				declined_friend.delete()
-				messages.info(request, "Friend request declined.")
-			else:
-				messages.warning(request, 'You already declined')
+			handle_decline_friend(request, friend_id)
 
 		return redirect('friends')
 

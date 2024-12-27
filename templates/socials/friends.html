@@ -12,14 +12,14 @@
         {% endfor %}
     {% endif %}
 
-
     
-
     {% for friend_request in friend_requests %}
         <p>{{ friend_request.username }}</p>
         {% if friend_request.is_active %}
             <form action="{% url 'friends' %}" method="POST">
                 {% csrf_token %}
+                <!-- We get here an id of a user (our friend) that we add/decline to  a friend list 
+                in order to hand it over to our view and handle ir -->
                 <input type="hidden" name="user_id" value="{{ friend_request.id }}">
                 <input type="submit" name="accept_friend" value="Approve">
                 <input type="submit" name="decline_friend" value="Decline">

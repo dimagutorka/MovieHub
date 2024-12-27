@@ -5,13 +5,15 @@ from django.shortcuts import render, redirect
 from users.forms import UserForm, UserProfileForm, RegistrationForm, LoginForm
 from django.contrib.auth.models import User
 from social.models import FriendsList
-from social.forms import AddFriend
+from social.views import handle_add_friend, handle_delete_friend
 
 
 @login_required(login_url='/login/')
 def update_user_profile_view(request):
-	if request.method == 'POST':
+	form_user = UserForm(instance=request.user)
+	form_userprofile = UserProfileForm(instance=request.user.profile)
 
+	if request.method == 'POST':
 		form_user = UserForm(request.POST, instance=request.user)
 		form_userprofile = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
@@ -21,14 +23,9 @@ def update_user_profile_view(request):
 			messages.success(request, 'Your profile has been updated')
 			return redirect('home')
 
-	else:
-		form_user = UserForm(instance=request.user)
-		form_userprofile = UserProfileForm(instance=request.user.profile)
-
 	return render(request, 'users/profile_update.html', {
 		'form_user': form_user,
-		'form_userprofile': form_userprofile
-	})
+		'form_userprofile': form_userprofile})
 
 
 def login_view(request):
@@ -51,15 +48,17 @@ def login_view(request):
 
 
 def registration_view(request):
+	form = RegistrationForm()
+
 	if request.method == 'POST':
 		form = RegistrationForm(request.POST)
+
 		if form.is_valid():
 			user = form.save()
 			login(request, user)
 			request.session['username'] = user.username
 			return redirect('home')
-	else:
-		form = RegistrationForm()
+
 	return render(request, 'users/registration.html', {'form': form})
 
 
@@ -71,28 +70,20 @@ def logout_view(request):
 
 @login_required(login_url='/login/')
 def user_profile_view(request, user_id):
-	request_user_id = request.user
 	user = User.objects.get(id=user_id)
 	user_data = User.objects.select_related('profile').get(id=user_id)
-	friend = FriendsList.objects.filter(user_id=request_user_id, friend_id=user_id).first()
 
 	most_rated = user.rates.all().order_by('-rate')[:3]
 	least_rated = user.rates.all().order_by('rate')[:3]
 
-	friend_ids = FriendsList.objects.values_list('friend_id', flat=True).filter(user=request_user_id)
+	friend_ids = FriendsList.objects.values_list('friend_id', flat=True).filter(user=request.user)
+	friend = FriendsList.objects.filter(user_id=request.user, friend_id=user_id).first()
 
 	if request.method == 'POST':
-
 		if 'add_friend' in request.POST:
-			user_fried_form = AddFriend(request.POST)
-			if user_fried_form.is_valid():
-				form = user_fried_form.save(commit=False)
-				form.user = request_user_id
-				form.friend = user
-				form.save()
-
+			handle_add_friend(request, user_id)
 		if 'delete_friend' in request.POST:
-			FriendsList.objects.get(friend_id=user_id).delete()
+			handle_delete_friend(request, user_id)
 
 		return redirect('profile', user_id=user_id)
 
