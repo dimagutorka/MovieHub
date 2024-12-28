@@ -7,9 +7,3 @@ class AddFriend(forms.ModelForm):
 	class Meta:
 		model = FriendsList
 		fields = []
-
-
-class AcceptFriend(forms.ModelForm):
-	class Meta:
-		model = FriendsList
-		fields = []

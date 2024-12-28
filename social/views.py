@@ -1,19 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import AddFriend
 from .models import FriendsList
 from django.contrib.auth.models import User
 
 
 def handle_add_friend(request, user_id):
-	user_to_add_in_friend_list = User.objects.get(id=user_id)
-	user_fried_form = AddFriend(request.POST)
-	if user_fried_form.is_valid():
-		form = user_fried_form.save(commit=False)
-		form.user = request.user
-		form.friend = user_to_add_in_friend_list
-		form.save()
+	FriendsList.objects.create(user_id=request.user.id, friend_id=user_id)
 
 
 def handle_delete_friend(request, user_id):
