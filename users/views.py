@@ -79,6 +79,8 @@ def user_profile_view(request, user_id):
 	friend_ids = FriendsList.objects.values_list('friend_id', flat=True).filter(user=request.user)
 	friend = FriendsList.objects.filter(user_id=request.user, friend_id=user_id).first()
 
+	test = User.objects.get(id=1)
+
 	if request.method == 'POST':
 		if 'add_friend' in request.POST:
 			handle_add_friend(request, user_id)
