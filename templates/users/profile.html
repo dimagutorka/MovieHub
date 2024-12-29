@@ -29,7 +29,7 @@
     {% if request.user.id != user_id %}
     <form action="{% url 'profile' user_id %}" method="POST">
     {% if not friend_relation %}
-        <input type="submit" name="add_friend" value="Add friend">
+        <input type="submit" name="send_friend_request" value="Add friend">
     {% elif friend_relation and friend_relation.status == 'accepted' %}
         <input type="submit" name="delete_friend" value="Delete friend">
     {% elif friend_relation.status == 'pending' %}

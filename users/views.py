@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from social.models import FriendRequest
 from users.forms import UserForm, UserProfileForm, RegistrationForm, LoginForm
 from django.contrib.auth.models import User
-# from social.views import handle_add_friend, handle_delete_friend
+from social.views import handle_send_friend_request, handle_delete_friend
 from django.db.models import Q
 
 
@@ -72,9 +72,9 @@ def logout_view(request):
 
 @login_required(login_url='/login/')
 def user_profile_view(request, user_id):
-	user = User.objects.get(id=user_id)
 	user_data = User.objects.select_related('profile').get(id=user_id)
 
+	user = User.objects.get(id=user_id)
 	most_rated = user.rates.all().order_by('-rate')[:3]
 	least_rated = user.rates.all().order_by('rate')[:3]
 
@@ -85,17 +85,15 @@ def user_profile_view(request, user_id):
 	if request.method == 'POST':
 		if 'send_friend_request' in request.POST:
 			if not is_friend_relation_exists:
-				pass
-			# handle_add_friend(request, user_id)
+				handle_send_friend_request(request, user_id)
 
 		if 'delete_friend' in request.POST:
-			if is_friend_relation_exists and is_friend_relation_exists.status == 'accepted':
-				pass  # handle_delete_friend(request, user_id)
+			if is_friend_relation_exists:
+				handle_delete_friend(request, user_id)
 
 		if 'withdraw_friend_request':
-			if is_friend_relation_exists.status == 'pending':
-				pass
-			#  handle_withdraw_friend_request(request, user_id)
+			if is_friend_relation_exists:
+				pass #  handle_withdraw_friend_request(request, user_id)
 
 		return redirect('profile', user_id=user_id)
 

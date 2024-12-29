@@ -1,51 +1,51 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import FriendRequest, FriendList, BlackList
-from django.contrib.auth.models import User
+from django.db.models import Q
 
 
-def handle_add_friend(request, user_id):
-	FriendsList.objects.create(user_id=request.user.id, friend_id=user_id)
+def handle_send_friend_request(request, user_id):
+	FriendRequest.objects.create(from_user=request.user.id, to_user=user_id)
+	messages.success(request, 'Request to friends was sent successfully')
 
 
 def handle_delete_friend(request, user_id):
-	FriendsList.objects.get(friend_id=user_id, user_id=request.user.id).delete()
+	FriendList.objects.get(user1=request.user.id, user2=user_id).delete()
+	FriendRequest.objects.get(from_user=request.user.id, to_user=user_id).delete()
+	friend = get_object_or_404(User, pk=user_id)
+	messages.success(request, f'You\'ve deleted user {friend.username} form your friend list')
 
 
-def handle_accept_friend(request, friend_id):
-	accept_friend = get_object_or_404(FriendsList, user_id=friend_id, friend_id=request.user)
-
-	if not accept_friend.is_friend:
-		accept_friend.is_friend = True
-		accept_friend.save()
-		messages.success(request, 'Friend accepted')
+def handle_accept_friend(request, friend_request_id):
+	FriendList.objects.create(user1=request.user.id, user2=friend_request_id)
+	messages.success(request, 'Friend accepted')
 
 
-def handle_decline_friend(request, friend_id):
-	decline_friend = get_object_or_404(FriendsList, user_id=friend_id, friend_id=request.user)
-
-	if decline_friend.is_friend:
-		decline_friend.delete()
-		messages.info(request, "Friend request declined.")
+def handle_decline_friend(request, friend_request_id):
+	FriendRequest.objects.get(from_user=request.user.id, to_user=friend_request_id).delete()
+	messages.info(request, "Friend request declined.")
 
 
 @login_required(login_url='/login/')
 def friends_list_view(request):
-	# get all the user's id who want to befriend the current authorized user and who aren't friend with the user yet
-	friend_ids = FriendsList.objects.values_list('user_id', flat=True).filter(friend_id=request.user, is_friend=False)
-	# get all the user's objects based on a filter -> friend_ids
-	friend_requests = User.objects.filter(id__in=friend_ids)
+	friendship = FriendList.objects.filter(Q(user1=request.user.id) | Q(user2=request.user.id))
+	friends_list = [friend.user1 if friend.user2 == request.user.id else friend.user2 for friend in friendship]
+	requests_friend_list = FriendRequest.objects.values_list('from_user', flat=True).filter(to_user=request.user.id)
+
+	users = User.objects.filter(pk__in=requests_friend_list)
 
 	if request.method == 'POST':
-		friend_id = request.POST.get('user_id', None)
+		friend_request_id = request.POST.get('friend_request_id', None)
 
 		if "accept_friend" in request.POST:
-			handle_accept_friend(request, friend_id)
+			handle_accept_friend(request, friend_request_id)
 
 		elif "decline_friend" in request.POST:
-			handle_decline_friend(request, friend_id)
+			handle_decline_friend(request, friend_request_id)
 
 		return redirect('friends')
 
-	return render(request, 'socials/friends.html', {'friend_requests': friend_requests})
+	return render(request, 'socials/friends.html',
+	              {'friends_list': friends_list, 'requests_friend_list': requests_friend_list, 'users': users})
