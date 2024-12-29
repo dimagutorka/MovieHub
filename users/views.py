@@ -2,10 +2,12 @@ from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+
+from social.models import FriendRequest
 from users.forms import UserForm, UserProfileForm, RegistrationForm, LoginForm
 from django.contrib.auth.models import User
-from social.models import FriendsList
-from social.views import handle_add_friend, handle_delete_friend
+# from social.views import handle_add_friend, handle_delete_friend
+from django.db.models import Q
 
 
 @login_required(login_url='/login/')
@@ -76,16 +78,24 @@ def user_profile_view(request, user_id):
 	most_rated = user.rates.all().order_by('-rate')[:3]
 	least_rated = user.rates.all().order_by('rate')[:3]
 
-	friend_ids = FriendsList.objects.values_list('friend_id', flat=True).filter(user=request.user)
-	friend = FriendsList.objects.filter(user_id=request.user, friend_id=user_id).first()
-
-	test = User.objects.get(id=1)
+	is_friend_relation_exists = (FriendRequest.objects.filter(
+		Q(from_user=request.user.id, to_user=user_id) |
+		Q(from_user=user_id, to_user=request.user.id))).first()
 
 	if request.method == 'POST':
-		if 'add_friend' in request.POST:
-			handle_add_friend(request, user_id)
+		if 'send_friend_request' in request.POST:
+			if not is_friend_relation_exists:
+				pass
+			# handle_add_friend(request, user_id)
+
 		if 'delete_friend' in request.POST:
-			handle_delete_friend(request, user_id)
+			if is_friend_relation_exists and is_friend_relation_exists.status == 'accepted':
+				pass  # handle_delete_friend(request, user_id)
+
+		if 'withdraw_friend_request':
+			if is_friend_relation_exists.status == 'pending':
+				pass
+			#  handle_withdraw_friend_request(request, user_id)
 
 		return redirect('profile', user_id=user_id)
 
@@ -93,7 +103,6 @@ def user_profile_view(request, user_id):
 	           'most_rated': most_rated,
 	           'least_rated': least_rated,
 	           'user_id': user_id,
-	           'friend_ids': friend_ids,
-	           'friend': friend}
+	           'friend_relation': is_friend_relation_exists}
 
 	return render(request, 'users/profile.html', context)

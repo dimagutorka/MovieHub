@@ -103,10 +103,7 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'movies_hub/static',
-    # BASE_DIR / 'media/',
-]
+STATICFILES_DIRS = []
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -119,6 +116,8 @@ LOGIN_URL = '/home'
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+
 
 # CELERY CONFIGURATION
 CELERY_BROKER_URL = 'redis://localhost:6379/0'

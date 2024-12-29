@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import FriendsList
+from .models import FriendRequest, FriendList, BlackList
 from django.contrib.auth.models import User
 
 

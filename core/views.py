@@ -5,9 +5,8 @@ from movies.models import Movies
 
 # TODO-20: Movies status - to watch / watching / watched / on hold / backlog
 # TODO-9: Make users' profiles which post comments active Other users can click on their avatar/nickname and go to their profile
-# TODO-7: Add validation in forms form unathorized user who click rate/watch latter buttons
+# TODO-7: Add validation in forms form unauthorized user who click rate/watch latter buttons
 # TODO-6: add field avatar + last_updated/created to comment section on a movie page
-# TODO-5: Refactor views (too long)
 # TODO-4: Add movies you can like (think about ideas how it could be implemented)
 # TODO-15: There's an error when anon user try to post comments or open page with rate thingy
 # TODO-10: ПОПРОБОВАТЬ ПЕРЕСВЯЗАТЬ ВСЕ ЧЕРЕЗ ТАБЛИЦУ ЮЗЕРОВ usr = User.objects.get(id=1) | usr.friends
