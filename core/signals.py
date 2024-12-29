@@ -36,20 +36,20 @@ def calculate_avg_rate_after_creation(instance, **kwargs):
 #         )
 
 
-@receiver(post_save, sender=User)
-def user_registration_email(sender, instance, created, **kwargs):
-
-    subject = f"Hello from our site!"
-    recipient_list = ["dhutorka@gmail.com", "dgutorka@gmail.com"]
-
-    if created:
-        message = f"Hello {instance.username}! Thanks for registering!"
-        send_mail(
-            subject,
-            message=message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=recipient_list,
-        )
+# @receiver(post_save, sender=User)
+# def user_registration_email(sender, instance, created, **kwargs):
+#
+#     subject = f"Hello from our site!"
+#     recipient_list = ["dhutorka@gmail.com", "dgutorka@gmail.com"]
+#
+#     if created:
+#         message = f"Hello {instance.username}! Thanks for registering!"
+#         send_mail(
+#             subject,
+#             message=message,
+#             from_email=settings.EMAIL_HOST_USER,
+#             recipient_list=recipient_list,
+#         )
 
 
 @receiver(post_save, sender=User)
