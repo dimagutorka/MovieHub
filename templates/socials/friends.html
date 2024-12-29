@@ -12,16 +12,27 @@
         {% endfor %}
     {% endif %}
 
-    
-    {% for friend_request in users %}
-        <p>{{ friend_request.username }}</p>
+    {% for pending_friend in pending_friends %}
+        <p>{{ pending_friend.username }}</p>
             <form action="{% url 'friends' %}" method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="friend_request_id" value="{{ friend_request.id }}">
+                <input type="hidden" name="friend_request_id" value="{{ pending_friend.id }}">
                 <input type="submit" name="accept_friend" value="Approve">
                 <input type="submit" name="decline_friend" value="Decline">
             </form>
         <hr>
     {% endfor %}
-    
+
+    <form action="{% url 'friends' %}" method="POST">
+    {% csrf_token %}
+    {% for current_friend in current_list_of_friends %}
+        <p>{{ current_friend }}</p>
+        <input type="hidden" name="current_friend_id" value="{{ current_friend.id }}">
+        <input type="submit" name="delete_friend" value="Delete friend">
+        <hr>
+        </form> 
+    {% endfor %}
+
+
+
 {% endblock %}
