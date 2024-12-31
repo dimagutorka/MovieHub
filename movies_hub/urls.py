@@ -1,10 +1,10 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from debug_toolbar.toolbar import debug_toolbar_urls
 from core.api import api
 
 urlpatterns = ([
-	path(r'^celery-progress/', include('celery_progress.urls')),
+	re_path(r'^celery-progress/', include('celery_progress.urls')),
 	path('admin/', admin.site.urls),
 	path('api/', api.urls),
 	path('', include('users.urls')),

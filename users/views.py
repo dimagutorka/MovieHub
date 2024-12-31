@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
 from social.models import FriendRequest, FriendList
 from users.forms import UserForm, UserProfileForm, RegistrationForm, LoginForm
 from django.contrib.auth.models import User

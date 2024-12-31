@@ -1,5 +1,5 @@
 from django import forms
-from .models import WatchLater, Movies
+from .models import WatchLater, Movie
 
 
 class AddToWatchLater(forms.ModelForm):
@@ -10,5 +10,5 @@ class AddToWatchLater(forms.ModelForm):
 
 class MovieForm(forms.ModelForm):
 	class Meta:
-		model = Movies
+		model = Movie
 		fields = ['title', 'release_date', 'country', 'genres', 'poster']

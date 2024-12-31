@@ -6,7 +6,7 @@ from datetime import date
 
 class GenreSchema(ModelSchema):
 	class Meta:
-		model = Genres
+		model = Genre
 		fields = ('id', 'name')
 
 
@@ -18,7 +18,7 @@ class MovieSchema(ModelSchema):
 	genres: List[GenreSchema] | None = None
 
 	class Meta:
-		model = Movies
+		model = Movie
 		fields = ('id', 'title', 'overview', 'release_date', 'country', 'genres', 'adult', 'average_rating')
 
 

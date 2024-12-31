@@ -1,6 +1,6 @@
 import requests
 from django.core.management.base import BaseCommand
-from movies.models import Movies, Genres
+from movies.models import Movie, Genre
 
 
 class Command(BaseCommand):
@@ -10,7 +10,7 @@ class Command(BaseCommand):
 	headers = {"accept": "application/json", "Authorization": token}
 
 	url_to_genres = "https://api.themoviedb.org/3/genre/movie/list?language=en"
-	url_to_movies = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=22&sort_by=popularity.desc"
+	url_to_movies = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=3&sort_by=popularity.desc"
 
 	def add_arguments(self, parser):
 		parser.add_argument(
@@ -37,7 +37,7 @@ class Command(BaseCommand):
 			poster_path = base_url + img_size + i['poster_path']
 			genres = i['genre_ids']
 
-			movie = Movies.objects.create(
+			movie = Movie.objects.create(
 				title=i['title'],
 				overview=i['overview'],
 				release_date=i['release_date'],
@@ -50,7 +50,7 @@ class Command(BaseCommand):
 			r = requests.get(self.url_to_genres, headers=self.headers).json()['genres']
 			for ids in r:
 				if ids['id'] in genres:
-					genre = Genres.objects.get(name=ids['name'])
+					genre = Genre.objects.get(name=ids['name'])
 					movie.genres.add(genre)
 
 		self.stdout.write(self.style.SUCCESS('Movies loaded successfully'))
@@ -58,7 +58,7 @@ class Command(BaseCommand):
 	def load_genres(self):
 		r = requests.get(url=self.url_to_genres, headers=self.headers).json()['genres']
 		for i in r:
-			genre = Genres.objects.create(name=i['name'])
+			genre = Genre.objects.create(name=i['name'])
 			genre.save()
 
 		self.stdout.write(self.style.SUCCESS('Genres loaded successfully'))

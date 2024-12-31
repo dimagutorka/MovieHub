@@ -9,7 +9,7 @@ api = NinjaAPI(version="1.0.0")
 
 @api.get("movies/", response=list[MovieSchema])
 def get_movies_with_filters(request, sort_by: str = Query("title"), title_by_word: str = Query(None)):
-	movies = Movies.objects.all().order_by(sort_by)
+	movies = Movie.objects.all().order_by(sort_by)
 	if title_by_word:
 		movies = movies.filter(title__icontains=title_by_word)
 	return movies
@@ -17,12 +17,12 @@ def get_movies_with_filters(request, sort_by: str = Query("title"), title_by_wor
 
 @api.get("movies/{id}/", response=MovieSchema)
 def get_movie(request, id: int):
-	return get_object_or_404(Movies, id=id)
+	return get_object_or_404(Movie, id=id)
 
 
 @api.post("movies/", response={200: MovieSchema, 404: Error})
 def create_movie(request, movie: MovieCreateSchema):
-	all_genres = Genres.objects.all().values_list("id", flat=True)
+	all_genres = Genre.objects.all().values_list("id", flat=True)
 
 	if movie.genres:
 		for genre in movie.genres:
@@ -30,7 +30,7 @@ def create_movie(request, movie: MovieCreateSchema):
 				return 404, {"message": "genre does not exist"}
 
 	movie_data = movie.model_dump()
-	movie_creation = Movies.objects.create(
+	movie_creation = Movie.objects.create(
 		title=movie_data["title"],
 		overview=movie_data["overview"],
 		release_date=movie_data["release_date"],
@@ -44,7 +44,7 @@ def create_movie(request, movie: MovieCreateSchema):
 
 @api.put("movies/{id}/update/", response={200: MovieSchema, 404: Error})
 def update_movie(request, id: int, movie: MovieUpdateSchema):
-	movie_get = get_object_or_404(Movies, id=id)
+	movie_get = get_object_or_404(Movie, id=id)
 	movie_data = movie.model_dump()
 
 	if movie_get:
@@ -64,30 +64,30 @@ def update_movie(request, id: int, movie: MovieUpdateSchema):
 
 @api.delete("movies/{id}/delete/")
 def delete_movie(request, id: int):
-	movie_get = get_object_or_404(Movies, id=id)
+	movie_get = get_object_or_404(Movie, id=id)
 	movie_get.delete()
 	return {"success": f"Movie with id {id} has been deleted successfully."}
 
 
 @api.get("genres/", response=list[GenreSchema])
 def get_genres(request):
-	return Genres.objects.all()
+	return Genre.objects.all()
 
 
 @api.get("genres/{id}/", response=GenreSchema)
 def get_genre(request, id: int):
-	return get_object_or_404(Genres, id=id)
+	return get_object_or_404(Genre, id=id)
 
 
 @api.post('genres/', response=GenreSchema)
 def create_genre(request, genre: GenreCreateSchema):
 	genre_data = genre.model_dump()
-	genre_creation = Genres.objects.create(name=genre_data["name"])
+	genre_creation = Genre.objects.create(name=genre_data["name"])
 	return genre_creation
 
 
 @api.delete("genres/{id}/delete/", response=GenreSchema)
 def delete_genre(request, id: int):
-	genre_get = get_object_or_404(Genres, id=id)
+	genre_get = get_object_or_404(Genre, id=id)
 	genre_get.delete()
 	return genre_get

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models.aggregates import Count, Avg
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import AddToWatchLater, MovieForm
-from .models import Genres, Movies
+from .models import Genre, Movie
 from core.forms import CommentForm, RateForm
 from core.models import Rate
 
@@ -57,8 +57,8 @@ def create_movie_view(request):
 
 
 def genres_list_view(request):
-	all_genres = Genres.objects.prefetch_related('movies')
-	num_comments = (Movies.objects.prefetch_related('genres')
+	all_genres = Genre.objects.prefetch_related('movies')
+	num_comments = (Movie.objects.prefetch_related('genres')
 	                .annotate(num_comments=Count('comments')).order_by('-num_comments'))
 
 	return render(request, 'movies/genres_list.html',
@@ -66,7 +66,7 @@ def genres_list_view(request):
 
 
 def genre_detail_view(request, genre_id):
-	genre = get_object_or_404(Genres, pk=genre_id)
+	genre = get_object_or_404(Genre, pk=genre_id)
 	all_movies_in_genre = genre.movies.values('id', 'title')
 	context = {'movies': all_movies_in_genre}
 
@@ -89,24 +89,22 @@ def update_recently_visited_view(request, movie_id):
 	request.session["recently_viewed"] = recently_viewed
 	request.session.modified = True
 
-	return Movies.objects.filter(id__in=recently_viewed)
+	return Movie.objects.filter(id__in=recently_viewed)
 
 
 def movie_detail_view(request, movie_id):
-	movie = get_object_or_404(Movies, pk=movie_id)
+	movie = get_object_or_404(Movie, pk=movie_id)
 	avg_movie_rate = movie.rates.all().aggregate(Avg('rate'))['rate__avg']
-	genres_in_movie = movie.genres.all()
+	genres_in_movie = movie.genre.all()
 	comments = movie.comments.select_related('user').all()
+
+	rate_form = RateForm()
+	watch_later_form = AddToWatchLater()
+	comment_form = CommentForm()
 
 	if request.user.is_authenticated:
 		rate_instance = Rate.objects.filter(user=request.user, movie=movie).first()
 		rate_form = RateForm(instance=rate_instance)
-	else:
-		rate_form = RateForm()
-
-	# Empty forms
-	watch_later_form = AddToWatchLater()
-	comment_form = CommentForm()
 
 	if request.method == 'POST':
 		if 'comment_submit' in request.POST:
